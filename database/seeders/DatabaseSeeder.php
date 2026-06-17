@@ -28,14 +28,14 @@ class DatabaseSeeder extends Seeder
     {
         // 1. Create Admin Account
         $admin = User::create([
-            'name' => 'Admin AstridMart',
-            'email' => 'admin@astridmart.com',
+            'name' => 'Admin UMKMART',
+            'email' => 'admin@gmail.com',
             'password' => Hash::make('password'),
             'phone_number' => '081234567890',
         ]);
 
         AdminEmail::create([
-            'email' => 'admin@astridmart.com',
+            'email' => 'admin@gmail.com',
             'note' => 'Main Admin Account',
         ]);
 
@@ -84,8 +84,8 @@ class DatabaseSeeder extends Seeder
         // FASHION
         $p1 = Product::create([
             'category_id' => $catFashion->id,
-            'name' => 'Kaos Oversize AstridMart',
-            'description' => 'Kaos oversize bahan katun combed 24s premium yang adem dan nyaman digunakan sehari-hari. Desain minimalis elegan dengan logo AstridMart.',
+            'name' => 'Kaos Oversize UMKMART',
+            'description' => 'Kaos oversize bahan katun combed 24s premium yang adem dan nyaman digunakan sehari-hari. Desain minimalis elegan dengan logo UMKMART.',
             'price' => 85000,
             'stock' => 50,
             'rating' => 4.50,
@@ -96,7 +96,7 @@ class DatabaseSeeder extends Seeder
         $p2 = Product::create([
             'category_id' => $catFashion->id,
             'name' => 'Hoodie Polos Green Accent',
-            'description' => 'Hoodie hangat fleece tebal dengan warna hijau botol premium khas AstridMart. Dilengkapi tali pengatur dan saku depan yang luas.',
+            'description' => 'Hoodie hangat fleece tebal dengan warna hijau botol premium khas UMKMART. Dilengkapi tali pengatur dan saku depan yang luas.',
             'price' => 150000,
             'stock' => 30,
             'rating' => 4.80,
@@ -140,7 +140,7 @@ class DatabaseSeeder extends Seeder
         // AKSESORIS
         $p6 = Product::create([
             'category_id' => $catAksesoris->id,
-            'name' => 'Jam Tangan Sporty Astrid',
+            'name' => 'Jam Tangan Sporty UMKMART',
             'description' => 'Jam tangan sporty digital dengan ketahanan air (water resistant) 5 ATM. Dilengkapi fitur alarm, stopwatch, dan lampu LED malam.',
             'price' => 250000,
             'stock' => 15,
