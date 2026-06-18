@@ -26,6 +26,7 @@ Route::get('/product/{id}', [ProductController::class, 'detail'])->name('product
 Route::get('/category/{slug}', [ProductController::class, 'category'])->name('category');
 Route::get('/search', [ProductController::class, 'search'])->name('search');
 Route::get('/api/search', [ProductController::class, 'apiSearch']);
+Route::post('/buy-now', [OrderController::class, 'buyNow'])->name('buy_now');
 
 // User Protected Routes
 Route::middleware(['auth'])->group(function () {
@@ -45,7 +46,6 @@ Route::middleware(['auth'])->group(function () {
     // Checkout & Orders
     Route::get('/checkout', [OrderController::class, 'checkout'])->name('checkout');
     Route::post('/checkout', [OrderController::class, 'placeOrder'])->name('checkout.place');
-    Route::post('/buy-now', [OrderController::class, 'buyNow'])->name('buy_now');
     Route::get('/order/{code}', [OrderController::class, 'status'])->name('order.status');
 
     // AJAX API Polling
@@ -56,6 +56,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/chat/unread-counts', [ChatController::class, 'getUnreadCounts']);
     Route::get('/api/notifications/count', [NotificationController::class, 'getUnreadCount']);
     Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark_read');
+    Route::get('/notifications/{id}/read', [NotificationController::class, 'readAndRedirect'])->name('notifications.read');
     Route::get('/api/notifications', [NotificationController::class, 'apiGetNotifications']);
 });
 

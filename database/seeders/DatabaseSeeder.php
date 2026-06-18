@@ -67,18 +67,13 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // 4. Create Shipping Options
-        $shipAmbil = ShippingOption::create(['name' => 'Ambil Sendiri', 'fee_type' => 'fixed', 'fee_value' => 0]);
-        $shipAntar = ShippingOption::create(['name' => 'Antar Barang (Lokal)', 'fee_type' => 'fixed', 'fee_value' => 10000]);
-        $shipReguler = ShippingOption::create(['name' => 'Kurir Reguler', 'fee_type' => 'fixed', 'fee_value' => 15000]);
-        $shipInstan = ShippingOption::create(['name' => 'Kurir Instan', 'fee_type' => 'fixed', 'fee_value' => 30000]);
+        ShippingOption::create(['name' => 'Ambil di Tempat', 'fee_type' => 'fixed', 'fee_value' => 0]);
+        ShippingOption::create(['name' => 'Jasa Kirim Barang', 'fee_type' => 'fixed', 'fee_value' => 15000]);
 
         // 5. Create Payment Methods
-        $payBank = PaymentMethod::create(['name' => 'Transfer Bank']);
-        $payQris = PaymentMethod::create(['name' => 'QRIS']);
-        $payDana = PaymentMethod::create(['name' => 'DANA']);
-        $payOvo = PaymentMethod::create(['name' => 'OVO']);
-        $payShopee = PaymentMethod::create(['name' => 'ShopeePay']);
-        $payLain = PaymentMethod::create(['name' => 'Lainnya']);
+        PaymentMethod::create(['name' => 'Bayar di Toko']);
+        PaymentMethod::create(['name' => 'QRIS']);
+        PaymentMethod::create(['name' => 'Transfer Bank']);
 
         // 6. Create Products
         // FASHION

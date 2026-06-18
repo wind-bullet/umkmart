@@ -1,6 +1,7 @@
-@extends('layouts.app')
+@extends(Auth::user()->isAdmin() ? 'layouts.admin' : 'layouts.app')
 
 @section('title', 'Notifikasi - UMKMART')
+@section('page_title', 'Notifikasi')
 
 @section('content')
 <div class="flex justify-between items-center mb-6 text-left">
@@ -21,30 +22,32 @@
     @if($notifications->count() > 0)
         <div class="flex flex-col gap-4">
             @foreach($notifications as $notif)
-                <div class="p-4 rounded-2xl border transition-colors flex items-start gap-4 
-                    {{ $notif->is_read 
-                        ? 'bg-slate-50/20 border-slate-50 dark:bg-slate-900/10 dark:border-slate-900/40 text-slate-500' 
-                        : 'bg-emerald-50/30 border-emerald-100 dark:bg-emerald-950/10 dark:border-emerald-950/30 text-slate-800 dark:text-slate-200' }}">
-                    
-                    <!-- Icon -->
-                    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0
+                <a href="{{ route('notifications.read', $notif->id) }}" class="block hover:no-underline">
+                    <div class="p-4 rounded-2xl border transition-colors flex items-start gap-4 hover:shadow-md hover:border-emerald-250 dark:hover:border-emerald-850
                         {{ $notif->is_read 
-                            ? 'bg-slate-100 dark:bg-slate-800 text-slate-400' 
-                            : 'bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-400' }}">
-                        <span class="material-icons text-sm">
-                            {{ Str::contains($notif->title, 'Pesanan') ? 'shopping_bag' : (Str::contains($notif->title, 'Pesan') ? 'chat' : 'info') }}
-                        </span>
-                    </div>
-                    
-                    <!-- Content -->
-                    <div class="min-w-0 flex-grow text-left">
-                        <div class="flex items-center justify-between gap-4">
-                            <h4 class="font-bold text-xs">{{ $notif->title }}</h4>
-                            <span class="text-[9px] text-slate-400 flex-shrink-0">{{ $notif->created_at->diffForHumans() }}</span>
+                            ? 'bg-slate-50/20 border-slate-50 dark:bg-slate-900/10 dark:border-slate-900/40 text-slate-500' 
+                            : 'bg-emerald-50/30 border-emerald-100 dark:bg-emerald-950/10 dark:border-emerald-950/30 text-slate-800 dark:text-slate-200' }}">
+                        
+                        <!-- Icon -->
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0
+                            {{ $notif->is_read 
+                                ? 'bg-slate-100 dark:bg-slate-800 text-slate-400' 
+                                : 'bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-400' }}">
+                            <span class="material-icons text-sm">
+                                {{ Str::contains($notif->title, 'Pesanan') ? 'shopping_bag' : (Str::contains($notif->title, 'Pesan') ? 'chat' : 'info') }}
+                            </span>
                         </div>
-                        <p class="text-xs mt-1 leading-relaxed">{{ $notif->message }}</p>
+                        
+                        <!-- Content -->
+                        <div class="min-w-0 flex-grow text-left">
+                            <div class="flex items-center justify-between gap-4">
+                                <h4 class="font-bold text-xs">{{ $notif->title }}</h4>
+                                <span class="text-[9px] text-slate-400 flex-shrink-0">{{ $notif->created_at->diffForHumans() }}</span>
+                            </div>
+                            <p class="text-xs mt-1 leading-relaxed">{{ $notif->message }}</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             @endforeach
         </div>
         

@@ -12,6 +12,7 @@ use App\Models\PaymentMethod;
 use App\Models\Notification;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -35,6 +36,10 @@ class OrderController extends Controller
             'product_id' => $request->product_id,
             'qty' => $request->qty,
         ]]);
+
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('info', 'Silakan login terlebih dahulu untuk melanjutkan pembelian.');
+        }
 
         return redirect()->route('checkout');
     }
@@ -133,7 +138,14 @@ class OrderController extends Controller
         $total = $subtotal + $shippingCost;
         $orderCode = 'ORD-' . date('Ymd') . '-' . strtoupper(Str::random(4));
 
-        DB::transaction(function () use ($user, $orderCode, $subtotal, $shippingCost, $total, $paymentMethod, $shippingOption, $cartItems, $isBuyNow, $cart, $request, $isDelivery) {
+        $paymentMethodName = $paymentMethod->name;
+        if ($paymentMethodName === 'Bayar di Toko') {
+            if (!Str::contains(strtolower($shippingOption->name), 'ambil')) {
+                $paymentMethodName = 'COD';
+            }
+        }
+
+        DB::transaction(function () use ($user, $orderCode, $subtotal, $shippingCost, $total, $paymentMethodName, $shippingOption, $cartItems, $isBuyNow, $cart, $request, $isDelivery) {
             // 1. Create Order
             $order = Order::create([
                 'user_id' => $user->id,
@@ -141,7 +153,7 @@ class OrderController extends Controller
                 'subtotal' => $subtotal,
                 'shipping_cost' => $shippingCost,
                 'total' => $total,
-                'payment_method' => $paymentMethod->name,
+                'payment_method' => $paymentMethodName,
                 'delivery_method' => $shippingOption->name,
                 'shipping_address' => $isDelivery 
                     ? "Penerima: " . $request->recipient_name . "\nTelepon: " . $request->recipient_phone . "\nAlamat: " . $request->shipping_address 
@@ -191,6 +203,7 @@ class OrderController extends Controller
                             'user_id' => $admin->id,
                             'title' => 'Stok Menipis!',
                             'message' => "Stok produk '{$product->name}' tersisa {$product->stock} unit. Segera lakukan restok.",
+                            'related_url' => '/admin/products',
                         ]);
                     }
                 }
@@ -199,7 +212,7 @@ class OrderController extends Controller
             // 3. Create Payment Record (Simulated)
             Payment::create([
                 'order_id' => $order->id,
-                'payment_method' => $paymentMethod->name,
+                'payment_method' => $paymentMethodName,
                 'payment_status' => 'pending',
             ]);
 
@@ -207,7 +220,8 @@ class OrderController extends Controller
             Notification::create([
                 'user_id' => $user->id,
                 'title' => 'Pesanan Berhasil Dibuat',
-                'message' => "Pesanan Anda {$orderCode} telah berhasil dibuat. Silakan lakukan pembayaran senilai Rp " . number_format($total, 0, ',', '.') . " menggunakan {$paymentMethod->name}.",
+                'message' => "Pesanan Anda {$orderCode} telah berhasil dibuat. Silakan lakukan pembayaran senilai Rp " . number_format($total, 0, ',', '.') . " menggunakan {$paymentMethodName}.",
+                'related_url' => "/order/{$orderCode}",
             ]);
 
             // 5. Create Notification for Admins
@@ -218,6 +232,7 @@ class OrderController extends Controller
                     'user_id' => $admin->id,
                     'title' => 'Pesanan Baru',
                     'message' => "Pesanan baru {$orderCode} dari customer {$user->name} dengan total Rp " . number_format($total, 0, ',', '.') . ".",
+                    'related_url' => "/admin/chat?contact_id={$user->id}",
                 ]);
             }
 
@@ -229,8 +244,41 @@ class OrderController extends Controller
                     CartItem::where('cart_id', $cart->id)->delete();
                 }
             }
+
+            // 7. Auto-generate chat message template
+            $adminUser = User::whereIn('email', $adminEmails)->first();
+            if ($adminUser) {
+                $orderItemsText = '';
+                foreach ($cartItems as $item) {
+                    $categoryName = $item->product->category->name ?? '-';
+                    $itemTotal = $item->qty * $item->product->price;
+                    $orderItemsText .= "  • {$item->product->name} ({$categoryName}) x{$item->qty} - Rp " . number_format($itemTotal, 0, ',', '.') . "\n";
+                }
+
+                $templateMessage = "📦 Pesanan Baru\n"
+                    . "━━━━━━━━━━━━━━━\n"
+                    . "🔖 No. Pesanan: {$orderCode}\n"
+                    . "📅 Waktu: " . now()->format('d M Y, H:i') . "\n\n"
+                    . "🛍️ Daftar Barang:\n"
+                    . $orderItemsText . "\n"
+                    . "🚚 Pengiriman: {$shippingOption->name}\n"
+                    . "💳 Pembayaran: {$paymentMethodName}\n"
+                    . "💰 Total: Rp " . number_format($total, 0, ',', '.') . "\n"
+                    . "━━━━━━━━━━━━━━━\n"
+                    . "Mohon konfirmasi pesanan saya. Terima kasih! 🙏";
+
+                Message::create([
+                    'sender_id' => $user->id,
+                    'receiver_id' => $adminUser->id,
+                    'message_text' => $templateMessage,
+                    'is_read' => false,
+                ]);
+            }
         });
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'order_code' => $orderCode, 'message' => 'Pesanan berhasil dibuat!']);
+        }
         return redirect('/order/' . $orderCode)->with('success', 'Pesanan Anda berhasil dibuat!');
     }
 

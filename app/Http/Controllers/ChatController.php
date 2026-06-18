@@ -182,6 +182,7 @@ class ChatController extends Controller
                     'user_id' => $admin->id,
                     'title' => 'Pesan Baru dari Customer',
                     'message' => "Ada pesan baru dari {$user->name}: \"" . Str::limit($request->message_text, 35) . "\"",
+                    'related_url' => "/admin/chat?contact_id={$user->id}",
                 ]);
             }
         } else {
@@ -190,6 +191,7 @@ class ChatController extends Controller
                 'user_id' => $receiver->id,
                 'title' => 'Pesan Baru dari Admin',
                 'message' => "Admin UMKMART membalas pesan Anda: \"" . Str::limit($request->message_text, 35) . "\"",
+                'related_url' => "/user/chat",
             ]);
         }
 

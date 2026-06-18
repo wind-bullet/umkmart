@@ -200,9 +200,14 @@
             <h1 class="text-xl font-bold text-slate-800 dark:text-white">@yield('page_title', 'Dashboard')</h1>
             <div class="flex items-center gap-4">
                 <!-- Theme Switcher -->
-                <button onclick="toggleTheme()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors mr-2" title="Ubah Tema">
+                <button onclick="toggleTheme()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors mr-1" title="Ubah Tema">
                     <span id="theme-toggle-icon" class="material-icons">dark_mode</span>
                 </button>
+                <!-- Notifications -->
+                <a href="{{ route('user.notifications') }}" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 relative transition-colors mr-2" title="Notifikasi">
+                    <span class="material-icons">notifications</span>
+                    <span class="notification-badge hidden absolute top-1 right-1 w-4 h-4 rounded-full bg-rose-500 text-[10px] text-white flex items-center justify-center font-bold">0</span>
+                </a>
                 <!-- Profile dropdown -->
                 <div class="flex items-center gap-2">
                     <div class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/30 flex items-center justify-center text-emerald-700 dark:text-emerald-400 font-bold text-sm">
@@ -280,6 +285,28 @@
         }
 
         document.addEventListener('DOMContentLoaded', updateThemeIcon);
+
+        // Polling Notification Bell Badge
+        @auth
+        function pollNotificationsCount() {
+            fetch('/api/notifications/count')
+                .then(res => res.json())
+                .then(data => {
+                    const badges = document.querySelectorAll('.notification-badge');
+                    badges.forEach(badge => {
+                        if (data.count > 0) {
+                            badge.textContent = data.count;
+                            badge.classList.remove('hidden');
+                        } else {
+                            badge.classList.add('hidden');
+                        }
+                    });
+                });
+        }
+        
+        pollNotificationsCount();
+        setInterval(pollNotificationsCount, 5000); // Poll every 5s
+        @endauth
     </script>
     
     @yield('scripts')

@@ -35,6 +35,11 @@ class AuthController extends Controller
                     ->with('success', 'Selamat datang kembali, Admin!');
             }
 
+            if (session()->has('buy_now')) {
+                return redirect()->route('checkout')
+                    ->with('success', 'Login berhasil! Silakan selesaikan pembelian Anda.');
+            }
+
             return redirect()->intended('/user/dashboard')
                 ->with('success', 'Login berhasil!');
         }

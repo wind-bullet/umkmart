@@ -23,6 +23,14 @@
             <span class="material-icons text-lg">dashboard</span>
             <span>Dashboard</span>
         </a>
+
+        <a href="{{ route('user.notifications') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all
+            {{ Route::is('user.notifications') 
+                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/10' 
+                : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white' }}">
+            <span class="material-icons text-lg">notifications</span>
+            <span>Notifikasi</span>
+        </a>
         
         <div class="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500 px-3 mt-4 mb-2">Manajemen Toko</div>
         

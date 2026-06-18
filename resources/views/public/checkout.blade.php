@@ -82,8 +82,8 @@
                     @foreach($paymentMethods as $index => $pay)
                         <label class="relative flex flex-col p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-emerald-500 dark:hover:border-emerald-500 cursor-pointer transition-colors bg-slate-50/50 dark:bg-slate-900/40">
                             <div class="flex items-center gap-2">
-                                <input type="radio" name="payment_method_id" value="{{ $pay->id }}" {{ $index === 0 ? 'checked' : '' }} class="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-slate-300">
-                                <span class="text-xs font-bold text-slate-850 dark:text-white leading-none">{{ $pay->name }}</span>
+                                <input type="radio" name="payment_method_id" value="{{ $pay->id }}" data-name="{{ $pay->name }}" {{ $index === 0 ? 'checked' : '' }} class="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-slate-300">
+                                <span class="text-xs font-bold text-slate-850 dark:text-white leading-none" id="payment-label-{{ $pay->id }}">{{ $pay->name }}</span>
                             </div>
                         </label>
                     @endforeach
@@ -129,6 +129,30 @@
         </div>
     </div>
 </form>
+
+<!-- Checkout Success Modal -->
+<div id="checkout-success-modal" class="fixed inset-0 z-[100] flex items-center justify-center invisible opacity-0 transition-all duration-300" style="display: none;">
+    <!-- Overlay -->
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+    <!-- Card -->
+    <div class="relative bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-sm w-full mx-4 text-center shadow-2xl border border-slate-100 dark:border-slate-800 transform scale-95 transition-all duration-300" id="success-modal-card">
+        <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/50 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+            <span class="material-icons text-emerald-600 dark:text-emerald-400 text-3xl">check_circle</span>
+        </div>
+        <h2 class="text-xl font-extrabold text-slate-800 dark:text-white mb-2">Pesanan Berhasil!</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">
+            Pemesanan Anda telah tercatat. Rincian pesanan telah dikirimkan ke chat admin.
+        </p>
+        <div class="flex flex-col gap-3">
+            <a id="modal-btn-orders" href="/orders" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-md shadow-emerald-600/10">
+                Lihat Pesanan
+            </a>
+            <a href="/user/chat" class="w-full border border-emerald-600/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 font-bold py-3 px-4 rounded-xl text-sm transition-all">
+                Chat Admin
+            </a>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
@@ -161,7 +185,82 @@
                 phoneInput.setAttribute('required', 'required');
             }
         }
+
+        // Dynamic payment label: "Bayar di Toko" ↔ "COD (Cash on Delivery)"
+        document.querySelectorAll('input[name="payment_method_id"]').forEach(function(payInput) {
+            const originalName = payInput.getAttribute('data-name');
+            const labelEl = document.getElementById('payment-label-' + payInput.value);
+            if (originalName === 'Bayar di Toko' && labelEl) {
+                if (name.toLowerCase().includes('ambil')) {
+                    labelEl.textContent = 'Bayar di Toko';
+                } else {
+                    labelEl.textContent = 'COD (Cash on Delivery)';
+                }
+            }
+        });
     }
+
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'fixed top-24 left-1/2 transform -translate-x-1/2 bg-slate-900/90 text-white text-xs font-bold py-3 px-6 rounded-full shadow-2xl z-[200] transition-all duration-300 opacity-0 flex items-center gap-2 backdrop-blur-sm';
+        toast.innerHTML = `<span class="material-icons text-sm text-emerald-400">check_circle</span> <span>${message}</span>`;
+        document.body.appendChild(toast);
+        setTimeout(() => { toast.classList.remove('opacity-0'); toast.classList.add('opacity-100'); }, 10);
+        setTimeout(() => {
+            toast.classList.remove('opacity-100');
+            toast.classList.add('opacity-0');
+            setTimeout(() => { toast.remove(); }, 300);
+        }, 4000);
+    }
+
+    function showCheckoutModal(orderCode) {
+        document.getElementById('modal-btn-orders').href = '/order/' + orderCode;
+        const modal = document.getElementById('checkout-success-modal');
+        const card = document.getElementById('success-modal-card');
+        modal.style.display = 'flex';
+        // Force reflow
+        modal.offsetHeight;
+        modal.classList.remove('invisible', 'opacity-0');
+        modal.classList.add('opacity-100');
+        setTimeout(() => {
+            card.classList.remove('scale-95');
+            card.classList.add('scale-100');
+        }, 50);
+    }
+
+    // Intercept form submit with AJAX
+    document.getElementById('checkout-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const submitBtn = this.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.disabled = true;
+        
+        fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showToast("Info pesanan sudah terkirim ke akun admin.");
+                showCheckoutModal(data.order_code);
+            } else {
+                alert(data.message || 'Terjadi kesalahan. Silakan coba lagi.');
+                if (submitBtn) submitBtn.disabled = false;
+            }
+        })
+        .catch(err => {
+            alert('Terjadi kesalahan koneksi atau server. Silakan coba lagi.');
+            if (submitBtn) submitBtn.disabled = false;
+        });
+    });
 
     // Trigger initial load cost calculation
     document.addEventListener('DOMContentLoaded', () => {

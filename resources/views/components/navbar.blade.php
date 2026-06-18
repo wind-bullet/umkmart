@@ -13,6 +13,11 @@
                 <div class="hidden md:flex items-center gap-6">
                     <a href="{{ route('home') }}" class="text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 text-sm font-semibold">Beranda</a>
                     <a href="{{ route('search') }}" class="text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 text-sm font-semibold">Produk</a>
+                    @auth
+                        @if(!Auth::user()->isAdmin())
+                            <a href="{{ route('user.orders') }}" class="text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 text-sm font-semibold">Riwayat Belanja</a>
+                        @endif
+                    @endauth
                 </div>
             </div>
             
@@ -52,7 +57,7 @@
                     
                     <!-- Cart -->
                     @if(!Auth::user()->isAdmin())
-                        <a href="{{ route('cart') }}" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 relative transition-colors mr-2" title="Keranjang Belanja">
+                        <a href="{{ route('cart') }}" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 relative transition-colors mr-1" title="Keranjang Belanja">
                             <span class="material-icons">shopping_cart</span>
                             @php
                                 $cartCount = Auth::user()->cart ? Auth::user()->cart->items()->sum('qty') : 0;
@@ -77,11 +82,6 @@
                             <a href="{{ Auth::user()->isAdmin() ? route('admin.profile') : route('user.profile') }}" class="flex items-center gap-2 p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-semibold">
                                 <span class="material-icons text-sm text-slate-400">person</span> Profil Saya
                             </a>
-                            @if(!Auth::user()->isAdmin())
-                            <a href="{{ route('user.orders') }}" class="flex items-center gap-2 p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-semibold">
-                                <span class="material-icons text-sm text-slate-400">shopping_bag</span> Riwayat Belanja
-                            </a>
-                            @endif
                             @if(Auth::user()->isAdmin())
                                 <hr class="my-1 border-slate-100 dark:border-slate-800">
                                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 p-2 rounded-xl text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 text-sm font-bold">
