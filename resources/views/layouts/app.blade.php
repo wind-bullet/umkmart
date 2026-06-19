@@ -56,7 +56,7 @@
     </style>
     @yield('styles')
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300 overflow-x-hidden {{ Route::is('user.chat') || Route::is('admin.chat') ? 'chat-page-body' : '' }}">
     
     <!-- Navbar -->
     @include('components.navbar')
@@ -87,6 +87,7 @@
     </main>
     
     <!-- Footer -->
+    @if(!Route::is('user.chat') && !Route::is('admin.chat'))
     <footer class="hidden md:block bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-850 py-8 text-center text-sm text-slate-500 dark:text-slate-400 mt-auto">
         <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
@@ -99,6 +100,7 @@
             </div>
         </div>
     </footer>
+    @endif
     
     <!-- Mobile Bottom Navigation -->
     @include('components.bottom-nav')

@@ -6,7 +6,7 @@
     }
 @endphp
 
-<div class="group relative rounded-2xl overflow-hidden transition-all duration-300 {{ $isVoucher ? 'bg-transparent border-2 border-dashed border-emerald-600 dark:border-emerald-400 hover:shadow-lg' : 'bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-850 hover:shadow-xl' }}">
+<div class="group relative rounded-2xl overflow-hidden shadow-sm md:shadow-md transition-all duration-300 {{ $isVoucher ? 'bg-transparent border-2 border-dashed border-emerald-600 dark:border-emerald-400 hover:shadow-lg' : 'bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-850 hover:shadow-xl' }}">
     <!-- Image -->
     <div class="relative aspect-square overflow-hidden bg-slate-100 dark:bg-slate-900">
         <!-- Overlay for hover zoom -->

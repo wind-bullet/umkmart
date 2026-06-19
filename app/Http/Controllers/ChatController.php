@@ -12,9 +12,23 @@ use Illuminate\Support\Str;
 
 class ChatController extends Controller
 {
+    private function checkDatabaseMigration()
+    {
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('messages', 'image')) {
+            try {
+                \Illuminate\Support\Facades\Schema::table('messages', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->string('image')->nullable();
+                });
+            } catch (\Exception $e) {
+                // Ignore failure if applied
+            }
+        }
+    }
+
     // User chat page
     public function index()
     {
+        $this->checkDatabaseMigration();
         $user = Auth::user();
         if ($user->isAdmin()) {
             return redirect()->route('admin.chat');
@@ -48,6 +62,7 @@ class ChatController extends Controller
     // Admin chat page
     public function adminChat(Request $request)
     {
+        $this->checkDatabaseMigration();
         $admin = Auth::user();
         
         // Find all users who have chatted with the admin or who are customers
@@ -149,7 +164,8 @@ class ChatController extends Controller
     {
         $request->validate([
             'receiver_id' => 'required|exists:users,id',
-            'message_text' => 'required|string',
+            'message_text' => 'required_without:chat_image|nullable|string',
+            'chat_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
         $user = Auth::user();
@@ -163,16 +179,33 @@ class ChatController extends Controller
             ], 400);
         }
 
+        $imageName = null;
+        if ($request->hasFile('chat_image')) {
+            $image = $request->file('chat_image');
+            $imageName = 'chat_' . time() . '_' . Str::random(8) . '.' . $image->getClientOriginalExtension();
+            
+            // Ensure public/uploads/chat folder exists
+            $uploadPath = public_path('uploads/chat');
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+            
+            $image->move($uploadPath, $imageName);
+        }
+
         $message = Message::create([
             'sender_id' => $user->id,
             'receiver_id' => $receiverId,
             'message_text' => $request->message_text,
+            'image' => $imageName,
             'is_read' => false,
         ]);
 
         // Send Notification
         $adminEmails = AdminEmail::pluck('email')->toArray();
         $isReceiverAdmin = in_value($receiver->email, $adminEmails) || AdminEmail::where('email', $receiver->email)->exists();
+
+        $notifText = $request->message_text ? Str::limit($request->message_text, 35) : "Mengirim gambar";
 
         if ($isReceiverAdmin) {
             // Notify all admins
@@ -181,7 +214,7 @@ class ChatController extends Controller
                 Notification::create([
                     'user_id' => $admin->id,
                     'title' => 'Pesan Baru dari Customer',
-                    'message' => "Ada pesan baru dari {$user->name}: \"" . Str::limit($request->message_text, 35) . "\"",
+                    'message' => "Ada pesan baru dari {$user->name}: \"" . $notifText . "\"",
                     'related_url' => "/admin/chat?contact_id={$user->id}",
                 ]);
             }
@@ -190,7 +223,7 @@ class ChatController extends Controller
             Notification::create([
                 'user_id' => $receiver->id,
                 'title' => 'Pesan Baru dari Admin',
-                'message' => "Admin UMKMART membalas pesan Anda: \"" . Str::limit($request->message_text, 35) . "\"",
+                'message' => "Admin UMKMART membalas pesan Anda: \"" . $notifText . "\"",
                 'related_url' => "/user/chat",
             ]);
         }

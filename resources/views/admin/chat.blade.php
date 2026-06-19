@@ -5,7 +5,55 @@
 
 @section('styles')
 <style>
+    @media (max-width: 767px) {
+        .mobile-admin-chat-input-container {
+            position: fixed !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100% !important;
+            z-index: 50 !important;
+            background-color: #ffffff !important;
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05) !important;
+            padding: 16px !important;
+            padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
+            border-top: 1px solid #f1f5f9 !important;
+        }
+        .dark .mobile-admin-chat-input-container {
+            background-color: #1e293b !important;
+            border-top-color: #334155 !important;
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3) !important;
+        }
+        #admin-chat-container {
+            padding-bottom: 120px !important;
+        }
+        .chat-contact-header {
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 30 !important;
+            background-color: #ffffff !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+            padding-top: 12px !important;
+            padding-bottom: 12px !important;
+        }
+        .dark .chat-contact-header {
+            background-color: #1e293b !important;
+            border-bottom-color: #334155 !important;
+        }
+    }
     @media (min-width: 768px) {
+        .mobile-admin-chat-input-container {
+            position: static !important;
+            width: auto !important;
+            background-color: #ffffff !important;
+            box-shadow: none !important;
+            padding: 16px !important;
+            border-top: 1px solid #f1f5f9 !important;
+        }
+        .dark .mobile-admin-chat-input-container {
+            background-color: #1e293b !important;
+            border-top-color: #334155 !important;
+        }
         body {
             overflow: hidden !important;
             height: 100vh !important;
@@ -16,7 +64,7 @@
             overflow: hidden !important;
         }
         main.flex-grow.p-6 {
-            height: calc(100vh - 73px - 53px) !important;
+            height: calc(100vh - 73px) !important;
             overflow: hidden !important;
             display: flex;
             flex-direction: column;
@@ -31,7 +79,7 @@
 @endsection
 
 @section('content')
-<div class="admin-chat-layout bg-white border border-slate-150 rounded-2xl overflow-hidden shadow-sm flex flex-col md:flex-row h-[600px] md:h-[600px]">
+<div class="admin-chat-layout bg-white border border-slate-150 rounded-2xl overflow-visible md:overflow-hidden shadow-sm flex flex-col md:flex-row h-[600px] md:h-[600px]">
     
     <!-- Sidebar Contacts (Left) -->
     <div class="w-full md:w-80 md:min-w-[320px] md:max-w-[320px] h-[200px] md:h-full border-r border-slate-150 flex flex-col bg-slate-50/50 flex-shrink-0 overflow-hidden">
@@ -71,10 +119,10 @@
     </div>
     
     <!-- Chat Window (Right) -->
-    <div class="flex-grow flex flex-col h-[400px] md:h-full overflow-hidden bg-white relative">
+    <div class="flex-grow flex flex-col h-[400px] md:h-full overflow-visible md:overflow-hidden bg-white relative">
         @if($activeContact)
             <!-- Window Header -->
-            <div class="px-6 py-4 border-b border-slate-150 flex items-center gap-3 bg-slate-50/20">
+            <div class="chat-contact-header px-6 py-4 border-b border-slate-150 flex items-center gap-3 bg-slate-50/20">
                 <div class="w-9 h-9 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center">
                     {{ strtoupper(substr($activeContact->name, 0, 1)) }}
                 </div>
@@ -85,7 +133,7 @@
             </div>
             
             <!-- Conversation Area -->
-            <div id="admin-chat-container" class="flex-grow p-6 overflow-y-auto overflow-x-hidden flex flex-col gap-4 bg-slate-50/30">
+            <div id="admin-chat-container" class="flex-grow p-6 pb-6 overflow-y-auto overflow-x-hidden flex flex-col gap-4 bg-slate-50/30">
                 @forelse($messages as $msg)
                     @php
                         $isAdminMsg = $msg->sender_id === Auth::user()->id;
@@ -98,14 +146,21 @@
                                     {{ $isAdminMsg 
                                         ? 'bg-emerald-600 text-white rounded-tr-none' 
                                         : 'bg-white border border-slate-150 text-slate-855 rounded-tl-none' }}">
-                                    <p class="msg-text">{{ $msg->message_text }}</p>
+                                    @if($msg->image)
+                                        <div class="mb-2 max-w-sm rounded-xl overflow-hidden">
+                                            <a href="/uploads/chat/{{ $msg->image }}" target="_blank">
+                                                <img src="/uploads/chat/{{ $msg->image }}" class="max-h-60 object-cover rounded-xl hover:opacity-90 transition-opacity">
+                                            </a>
+                                        </div>
+                                    @endif
+                                    <p class="msg-text @if(!$msg->message_text) hidden @endif">{{ $msg->message_text }}</p>
                                     <p class="text-[8px] text-right mt-1.5 leading-none {{ $isAdminMsg ? 'text-emerald-200' : 'text-slate-400' }}">
                                         <span class="msg-edited">{!! $editedStr !!}</span> {{ $msg->created_at->format('H:i') }}
                                     </p>
                                 </div>
                                 @if($isAdminMsg)
                                     <div id="msg-menu-{{ $msg->id }}" class="hidden absolute bg-white border border-slate-200 rounded-xl shadow-lg p-1" style="position: absolute; right: 0; bottom: 100%; margin-bottom: 4px; width: 96px; z-index: 9999;">
-                                        <button onclick="triggerEdit({{ $msg->id }}, '{{ addslashes($msg->message_text) }}')" class="flex items-center gap-1 w-full p-2 text-left text-[10px] font-semibold text-slate-700 hover:bg-slate-50 rounded-lg">
+                                        <button onclick="triggerEdit({{ $msg->id }}, '{{ addslashes($msg->message_text ?? '') }}')" class="flex items-center gap-1 w-full p-2 text-left text-[10px] font-semibold text-slate-700 hover:bg-slate-50 rounded-lg">
                                             <span class="material-icons text-xs">edit</span> Edit
                                         </button>
                                         <button onclick="deleteMessage({{ $msg->id }})" class="flex items-center gap-1 w-full p-2 text-left text-[10px] font-bold text-rose-600 hover:bg-rose-50 rounded-lg">
@@ -129,9 +184,26 @@
             </div>
             
             <!-- Input Form -->
-            <div class="p-4 border-t border-slate-150 bg-white flex-shrink-0">
-                <form id="admin-chat-form" class="flex items-center gap-3">
-                    <input type="text" id="admin-chat-input" required autocomplete="off" placeholder="Ketik balasan Anda disini..." class="flex-grow bg-slate-100 border-none rounded-xl py-3 px-4 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 text-slate-800">
+            <div class="mobile-admin-chat-input-container md:static md:p-4 md:border-t md:bg-white md:shadow-none flex-shrink-0">
+                <!-- Selected Image Preview Area -->
+                <div id="admin-chat-image-preview-container" class="hidden px-4 py-2 border-b border-slate-150 flex items-center justify-between bg-slate-50 rounded-t-2xl">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-10 h-10 rounded-lg overflow-hidden bg-slate-200 flex-shrink-0">
+                            <img id="admin-chat-image-preview" class="w-full h-full object-cover">
+                        </div>
+                        <span id="admin-chat-image-preview-filename" class="text-xs text-slate-500 truncate max-w-[150px] sm:max-w-xs"></span>
+                    </div>
+                    <button type="button" id="admin-chat-image-clear-btn" class="p-1 rounded-full hover:bg-slate-200 text-slate-400 hover:text-rose-600 transition-colors">
+                        <span class="material-icons text-lg">close</span>
+                    </button>
+                </div>
+                
+                <form id="admin-chat-form" class="flex items-center gap-2 md:gap-3 p-1" enctype="multipart/form-data">
+                    <input type="file" id="admin-chat-image-input" accept="image/png, image/jpeg, image/jpg, image/webp" class="hidden">
+                    <label for="admin-chat-image-input" class="w-11 h-11 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-emerald-600 flex items-center justify-center transition-colors cursor-pointer flex-shrink-0" title="Unggah Gambar">
+                        <span class="material-icons">attach_file</span>
+                    </label>
+                    <input type="text" id="admin-chat-input" autocomplete="off" placeholder="Ketik balasan Anda disini..." class="flex-grow bg-slate-100 border-none rounded-xl py-3 px-4 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 text-slate-800">
                     <button type="submit" class="w-11 h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center transition-colors flex-shrink-0 shadow-lg shadow-emerald-600/10">
                         <span class="material-icons">send</span>
                     </button>
@@ -158,6 +230,12 @@
     const form = document.getElementById('admin-chat-form');
     const input = document.getElementById('admin-chat-input');
     
+    const imageInput = document.getElementById('admin-chat-image-input');
+    const previewContainer = document.getElementById('admin-chat-image-preview-container');
+    const previewImage = document.getElementById('admin-chat-image-preview');
+    const previewFilename = document.getElementById('admin-chat-image-preview-filename');
+    const clearPreviewBtn = document.getElementById('admin-chat-image-clear-btn');
+    
     function scrollBottom() {
         if (container) {
             container.scrollTop = container.scrollHeight;
@@ -165,12 +243,42 @@
     }
     
     scrollBottom();
+
+    // Image Preview Handling
+    if (imageInput) {
+        imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                previewFilename.textContent = file.name;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    previewImage.src = event.target.result;
+                    previewContainer.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                clearPreview();
+            }
+        });
+    }
+
+    function clearPreview() {
+        if (imageInput) imageInput.value = '';
+        if (previewContainer) previewContainer.classList.add('hidden');
+        if (previewImage) previewImage.src = '';
+        if (previewFilename) previewFilename.textContent = '';
+    }
+
+    if (clearPreviewBtn) {
+        clearPreviewBtn.addEventListener('click', clearPreview);
+    }
     
     if (form) {
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             const text = input.value.trim();
-            if (!text) return;
+            const file = imageInput ? imageInput.files[0] : null;
+            if (!text && !file) return;
             
             input.disabled = true;
             const btn = form.querySelector('button[type="submit"]');
@@ -180,16 +288,17 @@
             btn.style.opacity = '0.7';
             btnIcon.textContent = 'hourglass_empty';
             
+            const formData = new FormData();
+            formData.append('receiver_id', contactId);
+            if (text) formData.append('message_text', text);
+            if (file) formData.append('chat_image', file);
+            
             fetch('/api/chat/send', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
-                body: JSON.stringify({
-                    receiver_id: contactId,
-                    message_text: text
-                })
+                body: formData
             })
             .then(res => res.json())
             .then(data => {
@@ -200,9 +309,10 @@
                 
                 if (data.success) {
                     input.value = '';
+                    clearPreview();
                     pollAdminMessages();
                 } else {
-                    alert('Gagal mengirim pesan. Silakan coba lagi.');
+                    alert(data.message || 'Gagal mengirim pesan. Silakan coba lagi.');
                 }
             })
             .catch(() => {
@@ -394,18 +504,27 @@
                     const timeStr = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
                     const editedStr = msg.updated_at !== msg.created_at ? ' <span class="text-[9px] opacity-60">(diedit)</span>' : '';
 
+                    const newText = msg.message_text || '';
+
                     if (el) {
                         if (el.querySelector('.edit-input')) return;
                         
                         const textEl = el.querySelector('.msg-text');
-                        if (textEl && textEl.innerHTML !== escapeHTML(msg.message_text)) {
-                            textEl.innerHTML = escapeHTML(msg.message_text);
-                            let editedEl = el.querySelector('.msg-edited');
-                            if (editedEl) editedEl.innerHTML = editedStr;
-                            
-                            const editBtn = el.querySelector('button[onclick^="triggerEdit"]');
-                            if (editBtn) {
-                                editBtn.setAttribute('onclick', `triggerEdit(${msg.id}, '${escapeJSString(msg.message_text)}')`);
+                        if (textEl) {
+                            if (textEl.innerHTML !== escapeHTML(newText)) {
+                                textEl.innerHTML = escapeHTML(newText);
+                                if (newText) {
+                                    textEl.classList.remove('hidden');
+                                } else {
+                                    textEl.classList.add('hidden');
+                                }
+                                let editedEl = el.querySelector('.msg-edited');
+                                if (editedEl) editedEl.innerHTML = editedStr;
+                                
+                                const editBtn = el.querySelector('button[onclick^="triggerEdit"]');
+                                if (editBtn) {
+                                    editBtn.setAttribute('onclick', `triggerEdit(${msg.id}, '${escapeJSString(newText)}')`);
+                                }
                             }
                         }
                     } else {
@@ -426,7 +545,7 @@
                             `;
                             menuHtml = `
                                 <div id="msg-menu-${msg.id}" class="hidden absolute bg-white border border-slate-200 rounded-xl shadow-lg p-1" style="position: absolute; right: 0; bottom: 100%; margin-bottom: 4px; width: 96px; z-index: 9999;">
-                                    <button onclick="triggerEdit(${msg.id}, '${escapeJSString(msg.message_text)}')" class="flex items-center gap-1 w-full p-2 text-left text-[10px] font-semibold text-slate-700 hover:bg-slate-50 rounded-lg">
+                                    <button onclick="triggerEdit(${msg.id}, '${escapeJSString(newText)}')" class="flex items-center gap-1 w-full p-2 text-left text-[10px] font-semibold text-slate-700 hover:bg-slate-50 rounded-lg">
                                         <span class="material-icons text-xs">edit</span> Edit
                                     </button>
                                     <button onclick="deleteMessage(${msg.id})" class="flex items-center gap-1 w-full p-2 text-left text-[10px] font-bold text-rose-600 hover:bg-rose-50 rounded-lg">
@@ -436,6 +555,18 @@
                             `;
                         }
 
+                        let imageHtml = '';
+                        if (msg.image) {
+                            imageHtml = `
+                                <div class="mb-2 max-w-sm rounded-xl overflow-hidden">
+                                    <a href="/uploads/chat/${msg.image}" target="_blank">
+                                        <img src="/uploads/chat/${msg.image}" class="max-h-60 object-cover rounded-xl hover:opacity-90 transition-opacity">
+                                    </a>
+                                </div>
+                            `;
+                        }
+                        const textHidden = newText ? '' : 'hidden';
+
                         div.innerHTML = `
                             <div class="group flex items-center max-w-[70%] ${isAdmin ? 'flex-row-reverse' : 'flex-row'}" style="${isAdmin ? 'flex-direction: row-reverse;' : ''}">
                                 <div class="relative msg-bubble-wrapper">
@@ -443,7 +574,8 @@
                                         ${isAdmin 
                                             ? 'bg-emerald-600 text-white rounded-tr-none' 
                                             : 'bg-white border border-slate-150 text-slate-855 rounded-tl-none'}">
-                                        <p class="msg-text">${escapeHTML(msg.message_text)}</p>
+                                        ${imageHtml}
+                                        <p class="msg-text ${textHidden}">${escapeHTML(newText)}</p>
                                         <p class="text-[8px] text-right mt-1.5 leading-none ${isAdmin ? 'text-emerald-250' : 'text-slate-400'}">
                                             <span class="msg-edited">${editedStr}</span> ${timeStr}
                                         </p>

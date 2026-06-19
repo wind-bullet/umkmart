@@ -100,78 +100,80 @@
     @if($products->count() > 0)
         <form id="bulk-delete-form" action="{{ route('admin.products.bulk_delete') }}" method="POST">
             @csrf
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead>
-                        <tr class="text-slate-400 font-bold uppercase border-b border-slate-150">
-                            <th class="pb-3 pl-2 select-checkbox-col hidden w-10">
-                                <input type="checkbox" id="select-all-checkbox" class="rounded border-slate-350 text-emerald-600 focus:ring-emerald-500">
-                            </th>
-                            <th class="pb-3 pl-2">Produk</th>
-                            <th class="pb-3">Kategori</th>
-                            <th class="pb-3">Harga</th>
-                            <th class="pb-3">Stok</th>
-                            <th class="pb-3">Status</th>
-                            <th class="pb-3 text-right pr-2">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        @foreach($products as $product)
-                            <tr class="hover:bg-slate-50/50">
-                                <td class="py-4 pl-2 select-checkbox-col hidden w-10">
-                                    <input type="checkbox" name="ids[]" value="{{ $product->id }}" class="product-select-checkbox rounded border-slate-350 text-emerald-600 focus:ring-emerald-500">
-                                </td>
-                                <!-- Image & Name -->
-                                <td class="py-4 pl-2 font-bold text-slate-800">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0">
-                                            <!-- Dynamic uploaded image or sample fallback -->
-                                            @if($product->image && file_exists(public_path('uploads/products/' . $product->image)))
-                                                <img src="/uploads/products/{{ $product->image }}" class="w-full h-full object-cover">
-                                            @else
-                                                <img src="/desain_sample/screen1.png" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100?text=UMKMART'">
-                                            @endif
-                                        </div>
-                                        <span class="truncate max-w-48">{{ $product->name }}</span>
-                                    </div>
-                                </td>
-                                <!-- Category -->
-                                <td class="py-4 text-slate-650 font-semibold">
-                                    {{ $product->category->name }}
-                                </td>
-                                <!-- Price -->
-                                <td class="py-4 font-black text-slate-850">
-                                    Rp {{ number_format($product->price, 0, ',', '.') }}
-                                </td>
-                                <!-- Stock -->
-                                <td class="py-4 font-bold">
-                                    <span class="{{ $product->stock < 5 ? 'text-rose-600' : 'text-slate-700' }}">{{ $product->stock }} unit</span>
-                                </td>
-                                <!-- Status -->
-                                <td class="py-4">
-                                    <span class="px-2 py-0.5 rounded-full border text-[9px] font-bold 
-                                        {{ $product->is_active ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200' }}">
-                                        {{ $product->is_active ? 'Aktif' : 'Non-aktif' }}
-                                    </span>
-                                </td>
-                                <!-- Actions -->
-                                <td class="py-4 text-right pr-2">
-                                    <div class="flex justify-end gap-1.5">
-                                        <a href="{{ route('admin.products.edit', $product->id) }}" class="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50" title="Edit">
-                                            <span class="material-icons text-sm">edit</span>
-                                        </a>
-                                        <form action="{{ route('admin.products.delete', $product->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus produk ini?')">
-                                            @csrf
-                                            <button type="submit" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50" title="Hapus">
-                                                <span class="material-icons text-sm">delete</span>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
+            <div class="card-body" style="max-width: 100%; padding: 0;">
+                <div style="display: block; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                    <table class="table" style="width: 100%; min-width: max-content; border-collapse: collapse; text-left text-xs">
+                        <thead>
+                            <tr class="text-slate-400 font-bold uppercase border-b border-slate-150">
+                                <th class="select-checkbox-col hidden w-10" style="white-space: nowrap !important; padding: 12px 20px !important;">
+                                    <input type="checkbox" id="select-all-checkbox" class="rounded border-slate-350 text-emerald-600 focus:ring-emerald-500">
+                                </th>
+                                <th style="white-space: nowrap !important; padding: 12px 20px !important;">PRODUK</th>
+                                <th style="white-space: nowrap !important; padding: 12px 20px !important;">KATEGORI</th>
+                                <th style="white-space: nowrap !important; padding: 12px 20px !important;">HARGA</th>
+                                <th style="white-space: nowrap !important; padding: 12px 20px !important;">STOK</th>
+                                <th style="white-space: nowrap !important; padding: 12px 20px !important;">STATUS</th>
+                                <th style="white-space: nowrap !important; padding: 12px 20px !important; text-align: right;">AKSI</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @foreach($products as $product)
+                                <tr class="hover:bg-slate-50/50">
+                                    <td class="select-checkbox-col hidden w-10" style="white-space: nowrap !important; padding: 12px 20px !important;">
+                                        <input type="checkbox" name="ids[]" value="{{ $product->id }}" class="product-select-checkbox rounded border-slate-350 text-emerald-600 focus:ring-emerald-500">
+                                    </td>
+                                    <!-- Image & Name -->
+                                    <td style="white-space: nowrap !important; padding: 12px 20px !important;" class="font-bold text-slate-800">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 flex-shrink-0">
+                                                <!-- Dynamic uploaded image or sample fallback -->
+                                                @if($product->image && file_exists(public_path('uploads/products/' . $product->image)))
+                                                    <img src="/uploads/products/{{ $product->image }}" class="w-full h-full object-cover">
+                                                @else
+                                                    <img src="/desain_sample/screen1.png" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100?text=UMKMART'">
+                                                @endif
+                                            </div>
+                                            <span class="truncate max-w-48">{{ $product->name }}</span>
+                                        </div>
+                                    </td>
+                                    <!-- Category -->
+                                    <td style="white-space: nowrap !important; padding: 12px 20px !important;" class="text-slate-650 font-semibold">
+                                        {{ $product->category->name }}
+                                    </td>
+                                    <!-- Price -->
+                                    <td style="white-space: nowrap !important; padding: 12px 20px !important;" class="font-black text-slate-850">
+                                        Rp {{ number_format($product->price, 0, ',', '.') }}
+                                    </td>
+                                    <!-- Stock -->
+                                    <td style="white-space: nowrap !important; padding: 12px 20px !important;" class="font-bold">
+                                        <span class="{{ $product->stock < 5 ? 'text-rose-600' : 'text-slate-700' }}">{{ $product->stock }} unit</span>
+                                    </td>
+                                    <!-- Status -->
+                                    <td style="white-space: nowrap !important; padding: 12px 20px !important;">
+                                        <span class="px-2 py-0.5 rounded-full border text-[9px] font-bold 
+                                            {{ $product->is_active ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200' }}">
+                                            {{ $product->is_active ? 'Aktif' : 'Non-aktif' }}
+                                        </span>
+                                    </td>
+                                    <!-- Actions -->
+                                    <td style="white-space: nowrap !important; padding: 12px 20px !important; text-align: right;">
+                                        <div style="display: inline-flex; align-items: center; gap: 1.5px; justify-content: flex-end;">
+                                            <a href="{{ route('admin.products.edit', $product->id) }}" class="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50" title="Edit">
+                                                <span class="material-icons text-sm">edit</span>
+                                            </a>
+                                            <form action="{{ route('admin.products.delete', $product->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus produk ini?')">
+                                                @csrf
+                                                <button type="submit" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50" title="Hapus">
+                                                    <span class="material-icons text-sm">delete</span>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </form>
         

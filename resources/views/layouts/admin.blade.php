@@ -188,7 +188,7 @@
     </style>
     @yield('styles')
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col md:flex-row transition-colors duration-300">
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col md:flex-row transition-colors duration-300 {{ Route::is('admin.chat') ? 'chat-page-body' : '' }}">
     
     <!-- Admin Sidebar -->
     @include('components.sidebar-admin')
@@ -252,9 +252,11 @@
             @yield('content')
         </main>
         
+        @if(!Route::is('admin.chat'))
         <footer class="bg-white dark:bg-slate-950 border-t border-slate-150 dark:border-slate-800 py-4 text-center text-xs text-slate-400 mt-auto">
             &copy; 2026 UMKMART. Dashboard Administrasi Prototipe UMKM.
         </footer>
+        @endif
     </div>
     
     <!-- Theme Toggle Scripts -->

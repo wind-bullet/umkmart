@@ -19,6 +19,12 @@
                     <span class="material-icons text-base">admin_panel_settings</span> Admin Panel
                 </a>
             @endif
+            <form action="{{ route('logout') }}" method="POST" class="inline-block">
+                @csrf
+                <button type="submit" class="flex items-center gap-1.5 px-4 py-2 bg-rose-50 dark:bg-rose-955/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-xs font-bold rounded-xl text-rose-600 dark:text-rose-400 transition-colors">
+                    <span class="material-icons text-base">logout</span> Keluar
+                </button>
+            </form>
         </div>
     </div>
 </div>
@@ -124,6 +130,21 @@
                 <span class="material-icons text-slate-300 text-sm">chevron_right</span>
             </a>
             @endif
+
+            <!-- Logout Action -->
+            <form action="{{ route('logout') }}" method="POST" class="block w-full">
+                @csrf
+                <button type="submit" class="flex items-center justify-between w-full p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl hover:bg-rose-50 dark:hover:bg-rose-950/15 transition-colors text-left border-none cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <span class="material-icons text-rose-600 dark:text-rose-400 text-2xl">logout</span>
+                        <div>
+                            <h4 class="font-bold text-xs text-rose-600 dark:text-rose-400">Keluar dari Akun</h4>
+                            <p class="text-[9px] text-slate-400 mt-0.5">Sign out dari sesi belanja Anda</p>
+                        </div>
+                    </div>
+                    <span class="material-icons text-slate-300 text-sm">chevron_right</span>
+                </button>
+            </form>
         </div>
     </div>
 </div>

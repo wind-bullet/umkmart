@@ -88,13 +88,24 @@
         <div class="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-850 p-6 rounded-3xl shadow-sm">
             <h3 class="font-bold text-slate-800 dark:text-white text-sm mb-4 pb-2 border-b border-slate-100 dark:border-slate-850">Tema Tampilan</h3>
             <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900 rounded-2xl">
-                <span class="text-xs font-bold text-slate-650 dark:text-slate-350">Mode Gelap</span>
+                <span class="text-xs font-bold text-slate-650 dark:text-slate-355">Mode Gelap</span>
                 
                 <!-- Toggle switch slider -->
                 <button onclick="toggleTheme(); updateToggleState()" id="theme-toggle-switch" class="w-12 h-6 rounded-full bg-slate-300 dark:bg-emerald-600 transition-colors relative flex items-center px-1">
                     <div id="theme-toggle-dot" class="w-4 h-4 rounded-full bg-white transition-transform transform translate-x-0 dark:translate-x-6"></div>
                 </button>
             </div>
+        </div>
+        
+        <!-- Logout Card -->
+        <div class="bg-white dark:bg-slate-950 border border-slate-100 dark:border-slate-850 p-6 rounded-3xl shadow-sm">
+            <h3 class="font-bold text-slate-800 dark:text-white text-sm mb-4 pb-2 border-b border-slate-100 dark:border-slate-850">Sesi Akun</h3>
+            <form action="{{ route('logout') }}" method="POST" class="block w-full">
+                @csrf
+                <button type="submit" class="w-full flex items-center justify-center gap-2 py-3 bg-rose-50 dark:bg-rose-950/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-xs font-bold rounded-xl text-rose-600 dark:text-rose-400 transition-colors shadow-sm cursor-pointer border-none">
+                    <span class="material-icons text-base">logout</span> Keluar dari Aplikasi
+                </button>
+            </form>
         </div>
         
         <!-- Recent Orders summary -->

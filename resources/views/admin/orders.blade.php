@@ -28,86 +28,90 @@
 
 <div class="bg-white border border-slate-150 rounded-2xl p-6 shadow-sm text-left">
     @if($orders->count() > 0)
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-                <thead>
-                    <tr class="text-slate-400 font-bold uppercase border-b border-slate-150">
-                        <th class="pb-3 pl-2">Kode Order</th>
-                        <th class="pb-3">Customer</th>
-                        <th class="pb-3">Pengiriman</th>
-                        <th class="pb-3">Pembayaran</th>
-                        <th class="pb-3">Total Belanja</th>
-                        <th class="pb-3">Status Pesanan</th>
-                        <th class="pb-3 text-right pr-2">Aksi Status</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                    @foreach($orders as $order)
-                        @php
-                            $colors = [
-                                'menunggu_pembayaran' => 'bg-amber-100 text-amber-800 border-amber-200',
-                                'dibayar' => 'bg-blue-100 text-blue-800 border-blue-200',
-                                'diproses' => 'bg-purple-100 text-purple-800 border-purple-200',
-                                'dikirim' => 'bg-indigo-100 text-indigo-800 border-indigo-200',
-                                'selesai' => 'bg-emerald-100 text-emerald-800 border-emerald-200',
-                            ];
-                            $labels = [
-                                'menunggu_pembayaran' => 'Menunggu Pembayaran',
-                                'dibayar' => 'Sudah Dibayar',
-                                'diproses' => 'Sedang Diproses',
-                                'dikirim' => 'Sedang Dikirim',
-                                'selesai' => 'Selesai',
-                            ];
-                        @endphp
-                        <tr class="hover:bg-slate-50/50">
-                            <td class="py-4 pl-2 font-bold text-slate-800">
-                                <button onclick="showOrderModal({{ json_encode($order->load('items.product')) }})" class="hover:text-emerald-600 hover:underline">
-                                    {{ $order->order_code }}
-                                </button>
-                            </td>
-                            <td class="py-4 font-semibold text-slate-700">
-                                <p>{{ $order->user->name }}</p>
-                                <p class="text-[9px] text-slate-400 mt-0.5">{{ $order->user->phone_number }}</p>
-                            </td>
-                            <td class="py-4 text-slate-600 font-semibold">{{ $order->delivery_method }}</td>
-                            <td class="py-4 text-slate-500">{{ $order->payment_method }}</td>
-                            <td class="py-4 font-bold text-slate-850">Rp {{ number_format($order->total, 0, ',', '.') }}</td>
-                            <td class="py-4">
-                                <span class="px-2.5 py-0.5 rounded-full border text-[9px] font-bold {{ $colors[$order->order_status] ?? 'bg-slate-100' }}">
-                                    {{ $labels[$order->order_status] ?? $order->order_status }}
-                                </span>
-                            </td>
-                            <td class="py-4 text-right pr-2 flex items-center justify-end gap-2 min-h-[50px]">
-                                <form action="{{ route('admin.orders.status', $order->id) }}" method="POST" class="inline">
-                                    @csrf
-                                    <select name="order_status" onchange="this.form.submit()" class="bg-slate-100 dark:bg-slate-800 border-none rounded-lg py-1.5 px-2 text-[10px] focus:outline-none text-slate-650 font-bold cursor-pointer">
-                                        <option value="menunggu_pembayaran" {{ $order->order_status == 'menunggu_pembayaran' ? 'selected' : '' }}>Menunggu</option>
-                                        <option value="dibayar" {{ $order->order_status == 'dibayar' ? 'selected' : '' }}>Dibayar</option>
-                                        <option value="diproses" {{ $order->order_status == 'diproses' ? 'selected' : '' }}>Diproses</option>
-                                        <option value="dikirim" {{ $order->order_status == 'dikirim' ? 'selected' : '' }}>Dikirim</option>
-                                        <option value="selesai" {{ $order->order_status == 'selesai' ? 'selected' : '' }}>Selesai</option>
-                                    </select>
-                                </form>
-                                
-                                @if($order->order_status === 'selesai')
-                                    @if(!$order->confirmation_requested)
-                                        <form action="{{ route('admin.orders.request_confirmation', $order->id) }}" method="POST" class="inline">
-                                            @csrf
-                                            <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-1.5 px-2.5 rounded-lg text-[9px] transition-colors shadow-sm" title="Kirim Notifikasi Konfirmasi Penerimaan">
-                                                Kirim Konfirmasi
-                                            </button>
-                                        </form>
-                                    @else
-                                        <span class="text-[9px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1.5 rounded-lg">
-                                            Sudah Dikirim
-                                        </span>
-                                    @endif
-                                @endif
-                            </td>
+        <div class="card-body" style="max-width: 100%; padding: 0;">
+            <div style="display: block; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                <table class="table" style="width: 100%; min-width: max-content; border-collapse: collapse; text-left text-xs">
+                    <thead>
+                        <tr class="text-slate-400 font-bold uppercase border-b border-slate-150">
+                            <th style="white-space: nowrap !important; padding: 12px 20px !important;">KODE ORDER</th>
+                            <th style="white-space: nowrap !important; padding: 12px 20px !important;">CUSTOMER</th>
+                            <th style="white-space: nowrap !important; padding: 12px 20px !important;">PENGIRIMAN</th>
+                            <th style="white-space: nowrap !important; padding: 12px 20px !important;">PEMBAYARAN</th>
+                            <th style="white-space: nowrap !important; padding: 12px 20px !important;">TOTAL BELANJA</th>
+                            <th style="white-space: nowrap !important; padding: 12px 20px !important;">STATUS PESANAN</th>
+                            <th style="white-space: nowrap !important; padding: 12px 20px !important; text-align: right;">AKSI STATUS</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @foreach($orders as $order)
+                            @php
+                                $colors = [
+                                    'menunggu_pembayaran' => 'bg-amber-100 text-amber-800 border-amber-200',
+                                    'dibayar' => 'bg-blue-100 text-blue-800 border-blue-200',
+                                    'diproses' => 'bg-purple-100 text-purple-800 border-purple-200',
+                                    'dikirim' => 'bg-indigo-100 text-indigo-800 border-indigo-200',
+                                    'selesai' => 'bg-emerald-100 text-emerald-800 border-emerald-200',
+                                ];
+                                $labels = [
+                                    'menunggu_pembayaran' => 'Menunggu Pembayaran',
+                                    'dibayar' => 'Sudah Dibayar',
+                                    'diproses' => 'Sedang Diproses',
+                                    'dikirim' => 'Sedang Dikirim',
+                                    'selesai' => 'Selesai',
+                                ];
+                            @endphp
+                            <tr class="hover:bg-slate-50/50">
+                                <td style="white-space: nowrap !important; padding: 12px 20px !important;" class="font-bold text-slate-800">
+                                    <button onclick="showOrderModal({{ json_encode($order->load('items.product')) }})" class="hover:text-emerald-600 hover:underline">
+                                        {{ $order->order_code }}
+                                    </button>
+                                </td>
+                                <td style="white-space: nowrap !important; padding: 12px 20px !important;" class="font-semibold text-slate-700">
+                                    <p>{{ $order->user->name }}</p>
+                                    <p class="text-[9px] text-slate-400 mt-0.5">{{ $order->user->phone_number }}</p>
+                                </td>
+                                <td style="white-space: nowrap !important; padding: 12px 20px !important;" class="text-slate-600 font-semibold">{{ $order->delivery_method }}</td>
+                                <td style="white-space: nowrap !important; padding: 12px 20px !important;" class="text-slate-500">{{ $order->payment_method }}</td>
+                                <td style="white-space: nowrap !important; padding: 12px 20px !important;" class="font-bold text-slate-850">Rp {{ number_format($order->total, 0, ',', '.') }}</td>
+                                <td style="white-space: nowrap !important; padding: 12px 20px !important;">
+                                    <span class="px-2.5 py-0.5 rounded-full border text-[9px] font-bold {{ $colors[$order->order_status] ?? 'bg-slate-100' }}">
+                                        {{ $labels[$order->order_status] ?? $order->order_status }}
+                                    </span>
+                                </td>
+                                <td style="white-space: nowrap !important; padding: 12px 20px !important; text-align: right;">
+                                    <div style="display: inline-flex; align-items: center; gap: 8px; justify-content: flex-end;">
+                                        <form action="{{ route('admin.orders.status', $order->id) }}" method="POST" class="inline">
+                                            @csrf
+                                            <select name="order_status" onchange="this.form.submit()" class="bg-slate-100 dark:bg-slate-800 border-none rounded-lg py-1.5 px-2 text-[10px] focus:outline-none text-slate-650 font-bold cursor-pointer">
+                                                <option value="menunggu_pembayaran" {{ $order->order_status == 'menunggu_pembayaran' ? 'selected' : '' }}>Menunggu</option>
+                                                <option value="dibayar" {{ $order->order_status == 'dibayar' ? 'selected' : '' }}>Dibayar</option>
+                                                <option value="diproses" {{ $order->order_status == 'diproses' ? 'selected' : '' }}>Diproses</option>
+                                                <option value="dikirim" {{ $order->order_status == 'dikirim' ? 'selected' : '' }}>Dikirim</option>
+                                                <option value="selesai" {{ $order->order_status == 'selesai' ? 'selected' : '' }}>Selesai</option>
+                                            </select>
+                                        </form>
+                                        
+                                        @if($order->order_status === 'selesai')
+                                            @if(!$order->confirmation_requested)
+                                                <form action="{{ route('admin.orders.request_confirmation', $order->id) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-1.5 px-2.5 rounded-lg text-[9px] transition-colors shadow-sm" title="Kirim Notifikasi Konfirmasi Penerimaan">
+                                                        Kirim Konfirmasi
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <span class="text-[9px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1.5 rounded-lg">
+                                                    Sudah Dikirim
+                                                </span>
+                                            @endif
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
         
         <div class="mt-6">

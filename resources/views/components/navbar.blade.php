@@ -51,7 +51,7 @@
                     </a>
                     
                     <!-- Chat -->
-                    <a href="{{ Auth::user()->isAdmin() ? route('admin.chat') : route('user.chat') }}" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 relative transition-colors" title="{{ Auth::user()->isAdmin() ? 'Chat Pelanggan' : 'Chat Admin' }}">
+                    <a href="{{ Auth::user()->isAdmin() ? route('admin.chat') : route('user.chat') }}" class="hidden md:block p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 relative transition-colors" title="{{ Auth::user()->isAdmin() ? 'Chat Pelanggan' : 'Chat Admin' }}">
                         <span class="material-icons">chat</span>
                     </a>
                     
